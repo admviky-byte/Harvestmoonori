@@ -821,7 +821,7 @@ async def expand_farm(user_id: int) -> tuple[bool, str]:
                 emoji = get_item_emoji(tool)
                 missing.append(f"{emoji} {get_item_name(tool)}")
         if missing:
-            return False, f"❌ Butuh: {', '.join(missing)}"
+            return False, f"❌ Lahan tidak dapat diperluas karena bahan tidak ada!\n\n🛒 Beli bahan berikut di **Toko Alat**:\n{', '.join(missing)}\n\nKetuk 🛒 **Toko Alat** di menu utama untuk beli."
 
         cost = user["plots"] * 200
         if user["coins"] < cost:
@@ -856,7 +856,7 @@ async def expand_animal_pens(user_id: int) -> tuple[bool, str]:
                 emoji = get_item_emoji(tool)
                 missing.append(f"{emoji} {get_item_name(tool)}")
         if missing:
-            return False, f"❌ Butuh: {', '.join(missing)}"
+            return False, f"❌ Kandang tidak dapat diperluas karena bahan tidak ada!\n\n🛒 Beli bahan berikut di **Toko Alat**:\n{', '.join(missing)}\n\nKetuk 🛒 **Toko Alat** di menu utama untuk beli."
 
         cost = user["animal_pens"] * 500
         if user["coins"] < cost:
