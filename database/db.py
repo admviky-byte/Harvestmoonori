@@ -177,3 +177,11 @@ async def get_leaderboard(limit: int = 10) -> list[dict]:
             "SELECT user_id, first_name, display_name, level, xp, coins, total_harvests, total_sales "
             "FROM users ORDER BY level DESC, xp DESC LIMIT ?", (limit,))
         return [dict(r) for r in rows]
+
+async def set_avatar(user_id: int, file_id: str):
+    """Save user avatar photo file_id."""
+    await set_setting(f"avatar_{user_id}", file_id)
+
+async def get_avatar(user_id: int) -> str | None:
+    """Get user avatar photo file_id."""
+    return await get_setting(f"avatar_{user_id}")
