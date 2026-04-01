@@ -6,7 +6,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 
-from database.db import get_or_create_user, get_setting, fetchone, fetchall, get_display_name, set_display_name, get_leaderboard
+from database.db import get_or_create_user, get_setting, fetchone, fetchall, get_display_name, set_display_name, get_leaderboard, set_avatar, get_avatar
 from game.engine import (
     get_plots, get_animal_pens, get_user_buildings, get_orders,
     plant_crop, harvest_crop, harvest_all,
@@ -746,7 +746,12 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if u["user_id"] == user.id:
             db_user["rank"] = i + 1
             break
-    await safe_edit(query, fmt_profile(db_user), profile_keyboard())
+    text = fmt_profile(db_user)
+    avatar = await get_avatar(user.id)
+    if avatar:
+        await safe_send_photo(query, text, profile_keyboard(), avatar)
+    else:
+        await safe_edit(query, text, profile_keyboard())
 
 async def profile_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -756,7 +761,19 @@ async def profile_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if u["user_id"] == user.id:
             db_user["rank"] = i + 1
             break
-    await safe_send(update, fmt_profile(db_user), profile_keyboard())
+    text = fmt_profile(db_user)
+    avatar = await get_avatar(user.id)
+    if avatar:
+        try:
+            await update.message.reply_photo(
+                photo=avatar, caption=text,
+                reply_markup=profile_keyboard(),
+                parse_mode=ParseMode.MARKDOWN
+            )
+        except Exception:
+            await safe_send(update, text, profile_keyboard())
+    else:
+        await safe_send(update, text, profile_keyboard())
 
 async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -790,6 +807,63 @@ async def setname_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         back_to_menu()
     )
     ctx.user_data["pending_action"] = "setname"
+
+
+# ─── SET AVATAR ──────────────────────────────────────────────────────────────
+
+async def setavatar_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    user = query.from_user
+    avatar = await get_avatar(user.id)
+    status = "✅ Sudah di-set" if avatar else "❌ Belum ada"
+    await safe_edit(
+        query,
+        f"🖼️ **Set Avatar Profil**\n\n"
+        f"Status avatar: {status}\n\n"
+        f"📸 **Kirim foto** ke chat ini untuk set sebagai avatar profilmu.\n\n"
+        f"Atau ketik `/setavatar` lalu kirim foto.",
+        back_to_menu()
+    )
+    ctx.user_data["pending_action"] = "setavatar"
+
+async def setavatar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    # Check if reply to photo
+    if update.message.reply_to_message and update.message.reply_to_message.photo:
+        photo = update.message.reply_to_message.photo[-1]
+        await set_avatar(user.id, photo.file_id)
+        await safe_send(update, "✅ Avatar profil berhasil di-set! Cek di /profile", back_to_menu())
+        return
+    # Check if message itself has photo
+    if update.message.photo:
+        photo = update.message.photo[-1]
+        await set_avatar(user.id, photo.file_id)
+        await safe_send(update, "✅ Avatar profil berhasil di-set! Cek di /profile", back_to_menu())
+        return
+
+    avatar = await get_avatar(user.id)
+    status = "✅ Sudah di-set" if avatar else "❌ Belum ada"
+    ctx.user_data["pending_action"] = "setavatar"
+    await safe_send(
+        update,
+        f"🖼️ **Set Avatar Profil**\n\n"
+        f"Status avatar: {status}\n\n"
+        f"📸 Kirim foto ke chat ini untuk set sebagai avatar.",
+    )
+
+async def user_photo_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Handle photo input from users for setavatar."""
+    action = ctx.user_data.get("pending_action")
+    if action != "setavatar":
+        return
+    if not update.message.photo:
+        return
+    ctx.user_data.pop("pending_action", None)
+    photo = update.message.photo[-1]
+    user = update.effective_user
+    await set_avatar(user.id, photo.file_id)
+    await safe_send(update, "✅ Avatar profil berhasil di-set! Cek di /profile 🎉", back_to_menu())
 
 async def setname_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
