@@ -928,6 +928,35 @@ async def claim_daily(user_id: int) -> tuple[bool, str]:
     return True, f"🎁 Hadiah harian diambil!\n+Rp{coins:,}  +{xp} XP{level_msg}"
 
 
+# ─── TOKO ALAT ───────────────────────────────────────────────────────────────
+
+async def buy_tool(user_id: int, tool_key: str, qty: int = 1) -> tuple[bool, str]:
+    from game.data import TOOL_SHOP
+    if tool_key not in TOOL_SHOP:
+        return False, "❓ Alat tidak ditemukan di toko."
+    tool = TOOL_SHOP[tool_key]
+    total_price = tool["price"] * qty
+
+    async with get_db() as db:
+        user = dict(await fetchone(db, "SELECT coins FROM users WHERE user_id = ?", (user_id,)))
+        if user["coins"] < total_price:
+            return False, f"💵 Kurang uang! Butuh Rp{total_price:,} (punya Rp{user['coins']:,})."
+
+        await db.execute("UPDATE users SET coins = coins - ? WHERE user_id = ?", (total_price, user_id))
+        await db.commit()
+
+    ok, msg = await add_to_inventory(user_id, tool_key, qty)
+    if not ok:
+        # Refund
+        async with get_db() as db:
+            await db.execute("UPDATE users SET coins = coins + ? WHERE user_id = ?", (total_price, user_id))
+            await db.commit()
+        return False, msg
+
+    emoji = get_item_emoji(tool_key)
+    return True, f"✅ Dibeli {qty}x {emoji} {tool['name']} seharga Rp{total_price:,}!"
+
+
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 async def get_user_full(user_id: int) -> dict | None:
