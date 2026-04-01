@@ -31,6 +31,7 @@ def main_menu_keyboard():
             InlineKeyboardButton("📖 Tutorial", callback_data="tutorial"),
         ],
         [
+            InlineKeyboardButton("📚 Katalog Item", callback_data="items_all"),
             InlineKeyboardButton("❓ Bantuan", callback_data="help"),
         ],
     ])
@@ -341,3 +342,20 @@ def shop_keyboard():
 
     buttons.append([InlineKeyboardButton("🏠 Menu Utama", callback_data="menu")])
     return InlineKeyboardMarkup(buttons)
+
+
+def items_keyboard():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🌾 Tanaman", callback_data="items_crops"),
+            InlineKeyboardButton("🐾 Hewan", callback_data="items_animals"),
+        ],
+        [
+            InlineKeyboardButton("🏭 Barang Olahan", callback_data="items_products"),
+            InlineKeyboardButton("🛒 Alat", callback_data="items_tools"),
+        ],
+        [
+            InlineKeyboardButton("📚 Semua Item", callback_data="items_all"),
+        ],
+        [InlineKeyboardButton("🏠 Menu Utama", callback_data="menu")],
+    ])
