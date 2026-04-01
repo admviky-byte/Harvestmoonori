@@ -151,6 +151,30 @@ BASE_PLOTS = 8
 BASE_ANIMAL_PENS = 2
 BONUS_DROP_RATE = 0.05
 
+# ─── TOKO ALAT (beli alat pakai Rp) ─────────────────────────────────────────
+TOOL_SHOP = {
+    # Alat upgrade Gudang (silo)
+    "nail":          {"price": 150,  "emoji": "📌", "name": "Nail",         "category": "Upgrade Gudang"},
+    "screw":         {"price": 200,  "emoji": "🔧", "name": "Screw",        "category": "Upgrade Gudang"},
+    "wood_panel":    {"price": 350,  "emoji": "🪟", "name": "Wood Panel",   "category": "Upgrade Gudang"},
+    # Alat upgrade Lumbung (barn)
+    "bolt":          {"price": 150,  "emoji": "🔩", "name": "Bolt",         "category": "Upgrade Lumbung"},
+    "plank":         {"price": 200,  "emoji": "🪵", "name": "Plank",        "category": "Upgrade Lumbung"},
+    "duct_tape":     {"price": 300,  "emoji": "🩹", "name": "Duct Tape",    "category": "Upgrade Lumbung"},
+    # Alat perluasan lahan
+    "land_deed":           {"price": 500,  "emoji": "📜", "name": "Land Deed",           "category": "Perluasan"},
+    "mallet":              {"price": 250,  "emoji": "🪛", "name": "Mallet",              "category": "Perluasan"},
+    "marker_stake":        {"price": 250,  "emoji": "📍", "name": "Marker Stake",        "category": "Perluasan"},
+    "construction_permit": {"price": 400,  "emoji": "📋", "name": "Construction Permit", "category": "Perluasan"},
+    # Alat pembersih rintangan
+    "axe":           {"price": 200,  "emoji": "🪓", "name": "Axe",          "category": "Pembersih"},
+    "saw":           {"price": 300,  "emoji": "🔪", "name": "Saw",          "category": "Pembersih"},
+    "dynamite":      {"price": 350,  "emoji": "🧨", "name": "Dynamite",     "category": "Pembersih"},
+    "tnt_barrel":    {"price": 500,  "emoji": "💣", "name": "TNT Barrel",   "category": "Pembersih"},
+    "shovel":        {"price": 250,  "emoji": "🪚", "name": "Shovel",       "category": "Pembersih"},
+    "rusty_hoe":     {"price": 150,  "emoji": "⚒️",  "name": "Rusty Hoe",    "category": "Pembersih"},
+}
+
 ALL_ITEMS = {}
 ALL_ITEMS.update({k: {"name": v["name"], "emoji": v["emoji"], "category": "crop"} for k, v in CROPS.items()})
 ALL_ITEMS.update({k: {"name": v["name"], "emoji": v["emoji"], "category": "animal_product"} for k, v in {
