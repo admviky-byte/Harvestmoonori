@@ -17,7 +17,7 @@ CROPS = {
 ANIMALS = {
     "chicken": {"name": "Chicken", "emoji": "🐔", "product": "egg",         "prod_emoji": "🥚", "feed_time": 3600,   "buy_cost": 150,  "sell_price": 30,  "level_req": 2},
     "cow":     {"name": "Cow",     "emoji": "🐄", "product": "milk",        "prod_emoji": "🥛", "feed_time": 7200,   "buy_cost": 450,  "sell_price": 60,  "level_req": 5},
-    "pig":     {"name": "Pig",     "emoji": "🐷", "product": "bacon",       "prod_emoji": "🥩", "feed_time": 10800,  "buy_cost": 600,  "sell_price": 80,  "level_req": 7},
+    "pig":     {"name": "Babi",     "emoji": "🐷", "product": "bacon",       "prod_emoji": "🥩", "feed_time": 10800,  "buy_cost": 600,  "sell_price": 80,  "level_req": 7},
     "sheep":   {"name": "Sheep",   "emoji": "🐑", "product": "wool",        "prod_emoji": "🧶", "feed_time": 14400,  "buy_cost": 800,  "sell_price": 100, "level_req": 9},
     "goat":    {"name": "Goat",    "emoji": "🐐", "product": "goat_milk",   "prod_emoji": "🧴", "feed_time": 10800,  "buy_cost": 700,  "sell_price": 90,  "level_req": 10},
     "bee":     {"name": "Bee",     "emoji": "🐝", "product": "honey",       "prod_emoji": "🍯", "feed_time": 18000,  "buy_cost": 1000, "sell_price": 130, "level_req": 12},
