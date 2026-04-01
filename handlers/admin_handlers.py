@@ -369,7 +369,7 @@ async def adm_user_detail_callback(update: Update, ctx: ContextTypes.DEFAULT_TYP
         f"🪪 ID: `{user['user_id']}`\n"
         f"👑 Level: {user['level']} | XP: {user['xp']}\n"
         f"💵 Rp{user['coins']:,} | 💎 Permata: {user['gems']}\n"
-        f"🌾 Panen: {user['total_harvests_sum']}\n"
+        f"🌾 Panen: {user['total_harvests']}\n"
         f"📦 Gudang: {sum(silo.values())}/{user['silo_cap']}\n"
         f"🏚 Lumbung: {sum(barn.values())}/{user['barn_cap']}\n"
     )
