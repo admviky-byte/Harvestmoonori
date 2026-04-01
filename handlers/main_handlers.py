@@ -16,18 +16,20 @@ from game.engine import (
     get_market_listings, buy_from_market, list_item_on_market, remove_market_listing,
     get_obstacles, clear_obstacle,
     upgrade_silo, upgrade_barn, expand_farm, expand_animal_pens,
-    sell_item, claim_daily, get_user_full, get_item_count
+    sell_item, claim_daily, get_user_full, get_item_count,
+    buy_tool
 )
 from utils.keyboards import (
     main_menu_keyboard, farm_keyboard, plant_keyboard, animals_keyboard,
     buy_animal_keyboard, factories_keyboard, factory_detail_keyboard,
     storage_keyboard, storage_items_keyboard, sell_keyboard,
     orders_keyboard, market_keyboard, land_keyboard, back_to_menu,
-    profile_keyboard, leaderboard_keyboard
+    profile_keyboard, leaderboard_keyboard, shop_keyboard
 )
 from utils.formatters import (
     fmt_farm, fmt_animals, fmt_storage, fmt_factories,
-    fmt_orders, fmt_market, fmt_profile, fmt_help, fmt_leaderboard
+    fmt_orders, fmt_market, fmt_profile, fmt_help, fmt_leaderboard,
+    fmt_tutorial
 )
 from database.db import parse_json_field
 
@@ -797,6 +799,55 @@ async def help_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await safe_send(update, fmt_help(), back_to_menu())
+
+# ─── TOKO ALAT ────────────────────────────────────────────────────────────────
+
+async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    text = (
+        "🛒 **Toko Alat**\n\n"
+        "Beli alat yang kamu butuhkan untuk upgrade & perluasan!\n"
+        "Alat juga bisa didapat gratis dari bonus panen (5%).\n\n"
+        "Ketuk alat untuk membeli:"
+    )
+    await safe_edit(query, text, shop_keyboard())
+
+async def shop_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🛒 **Toko Alat**\n\n"
+        "Beli alat yang kamu butuhkan untuk upgrade & perluasan!\n"
+        "Alat juga bisa didapat gratis dari bonus panen (5%).\n\n"
+        "Ketuk alat untuk membeli:"
+    )
+    await safe_send(update, text, shop_keyboard())
+
+async def shopbuy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    tool_key = query.data.split("_", 1)[1]
+    user = query.from_user
+    await get_or_create_user(user.id, user.username, user.first_name)
+    ok, msg = await buy_tool(user.id, tool_key, 1)
+    await query.answer(msg, show_alert=True)
+    if ok:
+        text = (
+            f"{msg}\n\n"
+            "🛒 **Toko Alat** — mau beli lagi?"
+        )
+        await safe_edit(query, text, shop_keyboard())
+
+
+# ─── TUTORIAL ─────────────────────────────────────────────────────────────────
+
+async def tutorial_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await safe_edit(query, fmt_tutorial(), back_to_menu())
+
+async def tutorial_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await safe_send(update, fmt_tutorial(), back_to_menu())
+
 
 async def noop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer("Tidak ada yang bisa dilakukan di sini!", show_alert=False)
