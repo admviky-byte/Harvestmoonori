@@ -659,3 +659,72 @@ async def setphoto_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"File ID: `{file_id[:30]}...`",
         parse_mode=ParseMode.MARKDOWN
     )
+
+@admin_only
+async def viewphoto_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin checks which items have photos set."""
+    args = ctx.args
+    if args:
+        # View specific item photo
+        item_key = args[0].lower()
+        photo_id = await get_setting(f"photo_{item_key}")
+        if photo_id:
+            from game.data import get_item_name, get_item_emoji
+            emoji = get_item_emoji(item_key)
+            name = get_item_name(item_key)
+            try:
+                await update.message.reply_photo(
+                    photo=photo_id,
+                    caption=f"{emoji} **{name}** (`{item_key}`)\n✅ Foto sudah di-set",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            except Exception as e:
+                await update.message.reply_text(f"❌ Gagal load foto: {e}")
+        else:
+            await update.message.reply_text(f"❌ Item `{item_key}` belum ada foto.", parse_mode=ParseMode.MARKDOWN)
+        return
+
+    # List all items with photos
+    async with get_db() as db:
+        rows = await fetchall(db, "SELECT key, value FROM game_settings WHERE key LIKE 'photo_%'")
+        photos = [dict(r) for r in rows]
+
+    if not photos:
+        await update.message.reply_text("📸 Belum ada item yang di-set fotonya.\n\nGunakan: Reply foto + `/setphoto <item_key>`", parse_mode=ParseMode.MARKDOWN)
+        return
+
+    from game.data import get_item_name, get_item_emoji
+    lines = ["📸 **Item dengan Foto:**\n"]
+    for p in photos:
+        item_key = p["key"].replace("photo_", "")
+        emoji = get_item_emoji(item_key)
+        name = get_item_name(item_key)
+        lines.append(f"✅ {emoji} {name} (`{item_key}`)")
+
+    lines.append(f"\nTotal: {len(photos)} item")
+    lines.append("\nLihat foto: `/viewphoto <item_key>`")
+    await update.message.reply_text("\n".join(lines), parse_mode=ParseMode.MARKDOWN)
+
+@admin_only
+async def delphoto_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin deletes a photo for an item."""
+    args = ctx.args
+    if not args:
+        await update.message.reply_text("Cara pakai: `/delphoto <item_key>`", parse_mode=ParseMode.MARKDOWN)
+        return
+
+    item_key = args[0].lower()
+    photo_id = await get_setting(f"photo_{item_key}")
+    if not photo_id:
+        await update.message.reply_text(f"❌ Item `{item_key}` tidak punya foto.", parse_mode=ParseMode.MARKDOWN)
+        return
+
+    async with get_db() as db:
+        await db.execute("DELETE FROM game_settings WHERE key = ?", (f"photo_{item_key}",))
+        await db.commit()
+
+    await log_admin_action(update.effective_user.id, "del_photo", details=item_key)
+    from game.data import get_item_name, get_item_emoji
+    emoji = get_item_emoji(item_key)
+    name = get_item_name(item_key)
+    await update.message.reply_text(f"✅ Foto {emoji} **{name}** (`{item_key}`) berhasil dihapus.", parse_mode=ParseMode.MARKDOWN)
