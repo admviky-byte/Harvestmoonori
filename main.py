@@ -29,9 +29,11 @@ from handlers.main_handlers import (
     mkt_buy_callback, my_listings_callback, rmlist_callback,
     market_list_callback, listitem_cmd,
     land_callback, clear_callback,
+    shop_callback, shop_cmd, shopbuy_callback,
     profile_callback, profile_cmd,
     leaderboard_callback, leaderboard_cmd,
     setname_callback, setname_cmd, user_text_input,
+    tutorial_callback, tutorial_cmd,
     daily_callback, daily_cmd,
     help_callback, help_cmd,
     noop_callback, locked_callback,
@@ -86,6 +88,8 @@ def register_handlers(app: Application):
     app.add_handler(CommandHandler("listitem", listitem_cmd))
     app.add_handler(CommandHandler("leaderboard", leaderboard_cmd))
     app.add_handler(CommandHandler("setname", setname_cmd))
+    app.add_handler(CommandHandler("shop", shop_cmd))
+    app.add_handler(CommandHandler("tutorial", tutorial_cmd))
 
     # Admin commands
     app.add_handler(CommandHandler("admin", admin_cmd))
@@ -161,10 +165,15 @@ def register_handlers(app: Application):
     app.add_handler(CallbackQueryHandler(land_callback, pattern="^land$"))
     app.add_handler(CallbackQueryHandler(clear_callback, pattern=r"^clear_\d+$"))
 
-    # Profile / Daily / Help / Leaderboard / Setname
+    # Shop
+    app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop$"))
+    app.add_handler(CallbackQueryHandler(shopbuy_callback, pattern=r"^shopbuy_.+$"))
+
+    # Profile / Daily / Help / Leaderboard / Setname / Tutorial
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^profile$"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^leaderboard$"))
     app.add_handler(CallbackQueryHandler(setname_callback, pattern="^setname$"))
+    app.add_handler(CallbackQueryHandler(tutorial_callback, pattern="^tutorial$"))
     app.add_handler(CallbackQueryHandler(daily_callback, pattern="^daily$"))
     app.add_handler(CallbackQueryHandler(help_callback, pattern="^help$"))
     app.add_handler(CallbackQueryHandler(noop_callback, pattern="^noop$"))
