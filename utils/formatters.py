@@ -469,3 +469,164 @@ Alat yang sering dibutuhin:
 Gitu aja sih bro, gampang kan? 😎
 Sekarang balik ke menu dan mulai farming! 🌾
 """
+
+
+def fmt_items_crops() -> str:
+    from game.engine import fmt_time
+    lines = [
+        "━━━━━━━━━━━━━━━━━━━━",
+        "🌾 **DAFTAR TANAMAN**",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Tanam di lahan, tunggu tumbuh, lalu panen!",
+        "Hasil panen masuk ke Gudang & bisa dijual.",
+        "",
+    ]
+    for k, v in CROPS.items():
+        profit = v["sell_price"] - v["seed_cost"]
+        lines.append(
+            f"{v['emoji']} **{v['name']}** (`{k}`)\n"
+            f"   💵 Benih: Rp{v['seed_cost']:,} → Jual: Rp{v['sell_price']:,} (untung Rp{profit:,})\n"
+            f"   ⏱ Waktu: {fmt_time(v['grow_time'])} | ⭐ +{v['xp']} XP | 🔒 Level {v['level_req']}\n"
+        )
+    return "\n".join(lines)
+
+
+def fmt_items_animals() -> str:
+    from game.engine import fmt_time
+    lines = [
+        "━━━━━━━━━━━━━━━━━━━━",
+        "🐾 **DAFTAR HEWAN**",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Beli hewan, taruh di kandang.",
+        "Otomatis produksi terus tanpa ditanam ulang!",
+        "",
+    ]
+    for k, v in ANIMALS.items():
+        lines.append(
+            f"{v['emoji']} **{v['name']}** → {v['prod_emoji']} {v['product'].replace('_',' ').title()}\n"
+            f"   💵 Beli: Rp{v['buy_cost']:,} | Jual produk: Rp{v['sell_price']:,}\n"
+            f"   ⏱ Produksi: {fmt_time(v['feed_time'])} | 🔒 Level {v['level_req']}\n"
+        )
+    return "\n".join(lines)
+
+
+def fmt_items_factories() -> str:
+    from game.engine import fmt_time
+    lines = [
+        "━━━━━━━━━━━━━━━━━━━━",
+        "🏭 **DAFTAR PABRIK & RESEP**",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Beli pabrik, olah bahan mentah jadi barang mahal!",
+        "",
+    ]
+    for bk, bv in BUILDINGS.items():
+        lines.append(f"{bv['emoji']} **{bv['name']}** — Rp{bv['buy_cost']:,} | 🔒 Level {bv['level_req']} | {bv['slots']} slot\n")
+        for rk, rv in bv["recipes"].items():
+            inputs = " + ".join(f"{q}x {get_item_name(i)}" for i, q in rv["inputs"].items())
+            out_emoji = PROCESSED_EMOJI.get(rk, "📦")
+            lines.append(
+                f"  {out_emoji} **{get_item_name(rk)}**\n"
+                f"     Bahan: {inputs}\n"
+                f"     ⏱ {fmt_time(rv['time'])} | 💵 Jual: Rp{rv['sell_price']:,} | ⭐ +{rv['xp']} XP\n"
+            )
+    return "\n".join(lines)
+
+
+def fmt_items_tools() -> str:
+    lines = [
+        "━━━━━━━━━━━━━━━━━━━━",
+        "🔧 **DAFTAR ALAT & FUNGSI**",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Alat didapat dari: bonus panen (5%) atau beli di 🛒 Toko Alat",
+        "",
+        "**📌 Alat Upgrade Gudang:**",
+        "Butuh 3x📌Nail + 2x🔧Screw + 1x🪟Wood Panel + Rp800",
+        "",
+        "**🔩 Alat Upgrade Lumbung:**",
+        "Butuh 3x🔩Bolt + 2x🪵Plank + 1x🩹Duct Tape + Rp1,000",
+        "",
+        "**📜 Alat Perluasan Lahan:**",
+        "Butuh 📜Land Deed + 🪛Mallet + 📍Marker Stake",
+        "",
+        "**🐾 Alat Perluasan Kandang:**",
+        "Butuh 📜Land Deed + 📋Construction Permit",
+        "",
+        "**🪓 Alat Pembersih Rintangan:**",
+        "🌱 Small Tree → butuh 🪓 Axe (bonus Rp50)",
+        "🌳 Big Tree → butuh 🔪 Saw (bonus Rp120)",
+        "🪨 Rock → butuh 🧨 Dynamite (bonus Rp100)",
+        "⛰️ Big Rock → butuh 💣 TNT Barrel (bonus Rp250)",
+        "🌿 Swamp → butuh 🪚 Shovel (bonus Rp80)",
+        "🪵 Dead Bush → butuh ⚒️ Rusty Hoe (bonus Rp40)",
+    ]
+    return "\n".join(lines)
+
+def fmt_all_items(category: str = "all") -> str:
+    """Generate item encyclopedia. Reads from game data dynamically."""
+    from game.data import CROPS, ANIMALS, BUILDINGS, TOOL_SHOP, PROCESSED_EMOJI
+    from game.engine import fmt_time
+
+    sections = []
+
+    if category in ("all", "crops"):
+        lines = ["🌾 **TANAMAN**", "━━━━━━━━━━━━━━━━━━━━", ""]
+        for key, c in CROPS.items():
+            lines.append(
+                f"{c['emoji']} **{c['name']}** (`{key}`)\n"
+                f"   🌱 Waktu tumbuh: {fmt_time(c['grow_time'])}\n"
+                f"   💵 Benih: Rp{c['seed_cost']:,} | Jual: Rp{c['sell_price']:,}\n"
+                f"   ⭐ XP: {c['xp']} | 🔓 Level {c['level_req']}\n"
+            )
+        sections.append("\n".join(lines))
+
+    if category in ("all", "animals"):
+        lines = ["🐾 **HEWAN TERNAK**", "━━━━━━━━━━━━━━━━━━━━", ""]
+        for key, a in ANIMALS.items():
+            lines.append(
+                f"{a['emoji']} **{a['name']}** (`{key}`)\n"
+                f"   {a['prod_emoji']} Produk: {a['product'].replace('_',' ').title()}\n"
+                f"   ⏳ Waktu produksi: {fmt_time(a['feed_time'])}\n"
+                f"   💵 Beli: Rp{a['buy_cost']:,} | Jual produk: Rp{a['sell_price']:,}\n"
+                f"   🔓 Level {a['level_req']}\n"
+            )
+        sections.append("\n".join(lines))
+
+    if category in ("all", "products"):
+        lines = ["🏭 **BARANG OLAHAN**", "━━━━━━━━━━━━━━━━━━━━", ""]
+        for bld_key, bld in BUILDINGS.items():
+            lines.append(f"\n{bld['emoji']} **{bld['name']}** (💵 Rp{bld['buy_cost']:,} | 🔓 Lv{bld['level_req']})")
+            for rec_key, rec in bld["recipes"].items():
+                emoji = PROCESSED_EMOJI.get(rec_key, "📦")
+                inputs = " + ".join(f"{qty}x {ing.replace('_',' ').title()}" for ing, qty in rec["inputs"].items())
+                lines.append(
+                    f"  {emoji} **{rec_key.replace('_',' ').title()}**\n"
+                    f"     📋 Bahan: {inputs}\n"
+                    f"     ⏳ {fmt_time(rec['time'])} | 💵 Jual: Rp{rec['sell_price']:,} | ⭐ {rec['xp']} XP"
+                )
+            lines.append("")
+        sections.append("\n".join(lines))
+
+    if category in ("all", "tools"):
+        lines = ["🛒 **ALAT (TOKO)**", "━━━━━━━━━━━━━━━━━━━━", ""]
+        # Group by category
+        cats = {}
+        for key, t in TOOL_SHOP.items():
+            cat = t["category"]
+            if cat not in cats:
+                cats[cat] = []
+            cats[cat].append((key, t))
+        for cat, tools in cats.items():
+            lines.append(f"**{cat}:**")
+            for key, t in tools:
+                lines.append(f"  {t['emoji']} {t['name']} (`{key}`) — 💵 Rp{t['price']:,}")
+            lines.append("")
+        sections.append("\n".join(lines))
+
+    if category == "all":
+        header = "📚 **ENSIKLOPEDIA ITEM — Harvest Kingdom**\n━━━━━━━━━━━━━━━━━━━━\n\nSemua item yang tersedia di game:\n"
+        return header + "\n\n".join(sections)
+    return "\n\n".join(sections)
