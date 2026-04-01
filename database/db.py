@@ -35,7 +35,7 @@ async def init_db():
         await db.execute("PRAGMA journal_mode=WAL")
         await db.execute("""CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY, username TEXT, first_name TEXT,
-            coins INTEGER DEFAULT 1000, gems INTEGER DEFAULT 5,
+            coins INTEGER DEFAULT 5000, gems INTEGER DEFAULT 20,
             display_name TEXT DEFAULT '',
             xp INTEGER DEFAULT 0, level INTEGER DEFAULT 1,
             plots INTEGER DEFAULT 8, animal_pens INTEGER DEFAULT 2,
