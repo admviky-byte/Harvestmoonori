@@ -298,27 +298,12 @@ def profile_keyboard():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("✏️ Ganti Nama", callback_data="setname"),
-            InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"),
+            InlineKeyboardButton("🖼️ Set Avatar", callback_data="setavatar"),
         ],
-        [InlineKeyboardButton("🏠 Menu Utama", callback_data="menu")],
-    ])
-
-
-def leaderboard_keyboard():
-    return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📊 Profil Saya", callback_data="profile"),
+            InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"),
             InlineKeyboardButton("🏠 Menu Utama", callback_data="menu"),
         ],
-    ])
-
-def profile_keyboard():
-    return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("✏️ Ganti Nama", callback_data="setname"),
-            InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"),
-        ],
-        [InlineKeyboardButton("🏠 Menu Utama", callback_data="menu")],
     ])
 
 
