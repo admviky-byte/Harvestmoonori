@@ -19,12 +19,16 @@ def main_menu_keyboard():
             InlineKeyboardButton("🏪 Pasar", callback_data="market"),
         ],
         [
+            InlineKeyboardButton("🛒 Toko Alat", callback_data="shop"),
             InlineKeyboardButton("🗺️ Lahan", callback_data="land"),
-            InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"),
         ],
         [
+            InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"),
             InlineKeyboardButton("📊 Profil", callback_data="profile"),
+        ],
+        [
             InlineKeyboardButton("🎁 Hadiah Harian", callback_data="daily"),
+            InlineKeyboardButton("📖 Tutorial", callback_data="tutorial"),
         ],
         [
             InlineKeyboardButton("❓ Bantuan", callback_data="help"),
@@ -325,3 +329,30 @@ def leaderboard_keyboard():
             InlineKeyboardButton("🏠 Menu Utama", callback_data="menu"),
         ],
     ])
+
+
+def shop_keyboard():
+    from game.data import TOOL_SHOP
+    buttons = []
+
+    # Group by category
+    categories = {}
+    for key, tool in TOOL_SHOP.items():
+        cat = tool["category"]
+        if cat not in categories:
+            categories[cat] = []
+        categories[cat].append((key, tool))
+
+    for cat, tools in categories.items():
+        row = []
+        for key, tool in tools:
+            label = f"{tool['emoji']} {tool['name']} Rp{tool['price']:,}"
+            row.append(InlineKeyboardButton(label, callback_data=f"shopbuy_{key}"))
+            if len(row) == 2:
+                buttons.append(row)
+                row = []
+        if row:
+            buttons.append(row)
+
+    buttons.append([InlineKeyboardButton("🏠 Menu Utama", callback_data="menu")])
+    return InlineKeyboardMarkup(buttons)
