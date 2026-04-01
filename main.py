@@ -47,7 +47,7 @@ from handlers.admin_handlers import (
     adm_broadcast_callback, adm_logs_callback,
     adm_items_callback, adm_addcrop_callback,
     adm_give_callback, adm_text_input,
-    give_cmd, givecoins_cmd, setphoto_cmd,
+    give_cmd, givecoins_cmd, setphoto_cmd, viewphoto_cmd, delphoto_cmd,
     get_admin_ids,
 )
 
@@ -96,6 +96,8 @@ def register_handlers(app: Application):
     app.add_handler(CommandHandler("give", give_cmd))
     app.add_handler(CommandHandler("givecoins", givecoins_cmd))
     app.add_handler(CommandHandler("setphoto", setphoto_cmd))
+    app.add_handler(CommandHandler("viewphoto", viewphoto_cmd))
+    app.add_handler(CommandHandler("delphoto", delphoto_cmd))
 
     # ─── ADMIN TEXT INPUT (must be before generic message handler) ─────────────
     admin_ids = get_admin_ids()
