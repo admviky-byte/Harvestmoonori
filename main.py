@@ -35,6 +35,7 @@ from handlers.main_handlers import (
     setname_callback, setname_cmd, user_text_input,
     setavatar_callback, setavatar_cmd, user_photo_input,
     tutorial_callback, tutorial_cmd,
+    items_callback, items_cmd,
     daily_callback, daily_cmd,
     help_callback, help_cmd,
     noop_callback, locked_callback,
@@ -92,6 +93,7 @@ def register_handlers(app: Application):
     app.add_handler(CommandHandler("setavatar", setavatar_cmd))
     app.add_handler(CommandHandler("shop", shop_cmd))
     app.add_handler(CommandHandler("tutorial", tutorial_cmd))
+    app.add_handler(CommandHandler("items", items_cmd))
 
     # Admin commands
     app.add_handler(CommandHandler("admin", admin_cmd))
@@ -185,6 +187,7 @@ def register_handlers(app: Application):
     app.add_handler(CallbackQueryHandler(setname_callback, pattern="^setname$"))
     app.add_handler(CallbackQueryHandler(setavatar_callback, pattern="^setavatar$"))
     app.add_handler(CallbackQueryHandler(tutorial_callback, pattern="^tutorial$"))
+    app.add_handler(CallbackQueryHandler(items_callback, pattern=r"^items_(crops|animals|products|tools|all)$"))
     app.add_handler(CallbackQueryHandler(daily_callback, pattern="^daily$"))
     app.add_handler(CallbackQueryHandler(help_callback, pattern="^help$"))
     app.add_handler(CallbackQueryHandler(noop_callback, pattern="^noop$"))
