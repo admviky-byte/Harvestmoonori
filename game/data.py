@@ -15,16 +15,16 @@ CROPS = {
 }
 
 ANIMALS = {
-    "chicken": {"name": "Chicken", "emoji": "🐔", "product": "egg",         "prod_emoji": "🥚", "feed_time": 3600,   "buy_cost": 150,  "sell_price": 30,  "level_req": 2},
-    "cow":     {"name": "Cow",     "emoji": "🐄", "product": "milk",        "prod_emoji": "🥛", "feed_time": 7200,   "buy_cost": 450,  "sell_price": 60,  "level_req": 5},
+    "chicken": {"name": "Ayam", "emoji": "🐔", "product": "egg",         "prod_emoji": "🥚", "feed_time": 3600,   "buy_cost": 150,  "sell_price": 30,  "level_req": 2},
+    "cow":     {"name": "Sapi",     "emoji": "🐄", "product": "milk",        "prod_emoji": "🥛", "feed_time": 7200,   "buy_cost": 450,  "sell_price": 60,  "level_req": 5},
     "pig":     {"name": "Babi",     "emoji": "🐷", "product": "bacon",       "prod_emoji": "🥩", "feed_time": 10800,  "buy_cost": 600,  "sell_price": 80,  "level_req": 7},
-    "sheep":   {"name": "Sheep",   "emoji": "🐑", "product": "wool",        "prod_emoji": "🧶", "feed_time": 14400,  "buy_cost": 800,  "sell_price": 100, "level_req": 9},
-    "goat":    {"name": "Goat",    "emoji": "🐐", "product": "goat_milk",   "prod_emoji": "🧴", "feed_time": 10800,  "buy_cost": 700,  "sell_price": 90,  "level_req": 10},
-    "bee":     {"name": "Bee",     "emoji": "🐝", "product": "honey",       "prod_emoji": "🍯", "feed_time": 18000,  "buy_cost": 1000, "sell_price": 130, "level_req": 12},
-    "duck":    {"name": "Duck",    "emoji": "🦆", "product": "feather",     "prod_emoji": "🪶", "feed_time": 7200,   "buy_cost": 350,  "sell_price": 50,  "level_req": 8},
-    "fish":    {"name": "Fish",    "emoji": "🐟", "product": "fish",        "prod_emoji": "🐠", "feed_time": 5400,   "buy_cost": 400,  "sell_price": 70,  "level_req": 6},
+    "sheep":   {"name": "Domba",   "emoji": "🐑", "product": "wool",        "prod_emoji": "🧶", "feed_time": 14400,  "buy_cost": 800,  "sell_price": 100, "level_req": 9},
+    "goat":    {"name": "Kambing",    "emoji": "🐐", "product": "goat_milk",   "prod_emoji": "🧴", "feed_time": 10800,  "buy_cost": 700,  "sell_price": 90,  "level_req": 10},
+    "bee":     {"name": "Lebah",     "emoji": "🐝", "product": "honey",       "prod_emoji": "🍯", "feed_time": 18000,  "buy_cost": 1000, "sell_price": 130, "level_req": 12},
+    "duck":    {"name": "Bebek",    "emoji": "🦆", "product": "feather",     "prod_emoji": "🪶", "feed_time": 7200,   "buy_cost": 350,  "sell_price": 50,  "level_req": 8},
+    "fish":    {"name": "Ikan",    "emoji": "🐟", "product": "fish",        "prod_emoji": "🐠", "feed_time": 5400,   "buy_cost": 400,  "sell_price": 70,  "level_req": 6},
     "lobster": {"name": "Lobster", "emoji": "🦞", "product": "lobster",     "prod_emoji": "🦀", "feed_time": 21600,  "buy_cost": 1500, "sell_price": 200, "level_req": 15},
-    "buffalo": {"name": "Buffalo", "emoji": "🐃", "product": "mozzarella",  "prod_emoji": "🧀", "feed_time": 28800,  "buy_cost": 2000, "sell_price": 260, "level_req": 18},
+    "buffalo": {"name": "Kerbau", "emoji": "🐃", "product": "mozzarella",  "prod_emoji": "🧀", "feed_time": 28800,  "buy_cost": 2000, "sell_price": 260, "level_req": 18},
 }
 
 BUILDINGS = {
