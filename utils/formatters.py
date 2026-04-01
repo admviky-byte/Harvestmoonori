@@ -360,3 +360,112 @@ def make_capacity_bar(used: int, cap: int) -> str:
     filled = int(pct * 10)
     bar = "[" + "█" * filled + "░" * (10 - filled) + f"] {used}/{cap}"
     return bar
+
+def fmt_tutorial() -> str:
+    return """
+📖 **TUTORIAL — Harvest Kingdom**
+━━━━━━━━━━━━━━━━━━━━
+
+Yo! Selamat datang di Harvest Kingdom! 🌾👑
+Ini game farming seru langsung di Telegram.
+Gw jelasin step by step ya, santai aja~
+
+━━━━━━━━━━━━━━━━━━━━
+🌱 **STEP 1: MULAI NANAM**
+━━━━━━━━━━━━━━━━━━━━
+Pertama-tama, lo harus nanam dulu bro!
+
+1️⃣ Ketuk **🏠 Kebun Saya** di menu
+2️⃣ Liat lahan kosong 🟩 → ketuk salah satu
+3️⃣ Pilih tanaman — mulai dari **🌾 Wheat** aja (2 menit doang)
+4️⃣ Tunggu sampe ada tanda ✅
+5️⃣ Ketuk lagi buat **panen**, atau pencet **🌾 Panen Semua**
+6️⃣ Hasil panen masuk ke **Gudang** lo
+
+💡 _Tips: Tanam wheat terus-terusan buat naikin level cepet!_
+
+━━━━━━━━━━━━━━━━━━━━
+📈 **STEP 2: NAIKIN LEVEL**
+━━━━━━━━━━━━━━━━━━━━
+Level itu penting banget! Makin tinggi level, makin banyak yang kebuka.
+
+Cara naikin level:
+🌾 Panen tanaman → dapet XP
+🚚 Selesaiin pesanan → dapet XP + Rp
+🎁 Ambil hadiah harian → dapet XP + Rp
+
+Level 2 → buka 🐔 Chicken + 🥕 Carrot
+Level 3 → buka 🏭 Bakery
+Level 5 → buka 🐄 Cow
+Level 7 → buka 🐷 Pig
+...dan seterusnya!
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 **STEP 3: BELI HEWAN**
+━━━━━━━━━━━━━━━━━━━━
+Begitu level 2, langsung beli hewan!
+
+1️⃣ Ketuk **🐾 Hewan** di menu
+2️⃣ Ketuk kandang kosong 🟩
+3️⃣ Pilih hewan (misal 🐔 Chicken — Rp150)
+4️⃣ Tunggu sampe ✅ → ketuk buat ambil produknya
+5️⃣ Atau pencet **🧺 Ambil Semua** biar gampang
+
+Hewan ngasilin produk terus tanpa perlu ditanam ulang! 🔄
+
+━━━━━━━━━━━━━━━━━━━━
+🏭 **STEP 4: BANGUN PABRIK**
+━━━━━━━━━━━━━━━━━━━━
+Pabrik itu mesin uang lo bro! Olah bahan mentah jadi barang mahal 💰
+
+Contoh:
+🌾 3x Wheat → 🏭 Bakery → 🍞 Bread (jual Rp35!)
+🥛 2x Milk → 🧈 Dairy → 🧈 Butter (jual Rp90!)
+
+1️⃣ Ketuk **🏭 Pabrik** → beli pabrik
+2️⃣ Pilih resep → bahan otomatis kepake
+3️⃣ Tunggu selesai → ambil hasilnya
+4️⃣ Jual di **📦 Penyimpanan** atau pasang di **🏪 Pasar**
+
+━━━━━━━━━━━━━━━━━━━━
+🚚 **STEP 5: SELESAIIN PESANAN**
+━━━━━━━━━━━━━━━━━━━━
+Pesanan = cara paling cuan dapet duit! 🤑
+
+1️⃣ Ketuk **🚚 Pesanan**
+2️⃣ Liat pesanan minta item apa
+3️⃣ Kumpulin item-nya (tanam/panen/produksi)
+4️⃣ Klik pesanan → otomatis delivered!
+5️⃣ Dapet **Rp + XP** lumayan gede
+
+Pesanan susah? Pencet **🔄 Refresh** (1x per 24 jam) buat ganti semua pesanan.
+
+━━━━━━━━━━━━━━━━━━━━
+🛒 **STEP 6: TOKO ALAT**
+━━━━━━━━━━━━━━━━━━━━
+Butuh alat buat upgrade gudang atau perluas lahan?
+
+2 cara dapetin:
+1️⃣ **Gratis** — tiap panen ada 5% chance dapet alat random
+2️⃣ **Beli** — ketuk **🛒 Toko Alat** di menu, beli pake Rp
+
+Alat yang sering dibutuhin:
+📌 Nail + 🔧 Screw + 🪟 Wood Panel → upgrade Gudang
+🔩 Bolt + 🪵 Plank + 🩹 Duct Tape → upgrade Lumbung
+📜 Land Deed + 🪛 Mallet + 📍 Marker Stake → perluas kebun
+
+━━━━━━━━━━━━━━━━━━━━
+💵 **TIPS PRO BIAR CEPET KAYA**
+━━━━━━━━━━━━━━━━━━━━
+✅ Jangan lupa ambil **🎁 Hadiah Harian** setiap hari!
+✅ Tanam wheat non-stop di awal (cepet, murah, dapet XP)
+✅ Upgrade gudang ASAP biar muat banyak
+✅ Bikin barang olahan — harga jual 3-5x lipat!
+✅ Selesaiin pesanan = income paling gede
+✅ Jual item mahal di **🏪 Pasar** ke pemain lain
+✅ Cek pasar juga — kadang ada item murah!
+
+━━━━━━━━━━━━━━━━━━━━
+Gitu aja sih bro, gampang kan? 😎
+Sekarang balik ke menu dan mulai farming! 🌾
+"""
