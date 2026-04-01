@@ -24,12 +24,12 @@ from utils.keyboards import (
     buy_animal_keyboard, factories_keyboard, factory_detail_keyboard,
     storage_keyboard, storage_items_keyboard, sell_keyboard,
     orders_keyboard, market_keyboard, land_keyboard, back_to_menu,
-    profile_keyboard, leaderboard_keyboard, shop_keyboard
+    profile_keyboard, leaderboard_keyboard, shop_keyboard, items_keyboard
 )
 from utils.formatters import (
     fmt_farm, fmt_animals, fmt_storage, fmt_factories,
     fmt_orders, fmt_market, fmt_profile, fmt_help, fmt_leaderboard,
-    fmt_tutorial
+    fmt_tutorial, fmt_all_items
 )
 from database.db import parse_json_field
 
@@ -981,6 +981,27 @@ async def tutorial_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def tutorial_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await safe_send(update, fmt_tutorial(), back_to_menu())
+
+
+# ─── ITEMS CATALOG ────────────────────────────────────────────────────────────
+
+async def items_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    category = query.data.replace("items_", "")
+    if category not in ("crops", "animals", "products", "tools", "all"):
+        category = "all"
+    text = fmt_all_items(category)
+    # Telegram message max 4096 chars
+    if len(text) > 4000:
+        text = text[:3990] + "\n\n_(dipotong)_"
+    from utils.keyboards import items_keyboard
+    await safe_edit(query, text, items_keyboard())
+
+async def items_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    from utils.keyboards import items_keyboard
+    text = "📚 **Ensiklopedia Item**\n\nPilih kategori item yang mau dilihat:"
+    await safe_send(update, text, items_keyboard())
 
 
 async def noop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
