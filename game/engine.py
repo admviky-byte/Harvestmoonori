@@ -841,7 +841,7 @@ async def expand_farm(user_id: int) -> tuple[bool, str]:
         await db.commit()
 
     await generate_obstacles_for_expansion(user_id, new_slots)
-    return True, f"✅ Kebun diperluas! +{PLOTS_PER_EXPANSION} lahan (sekarang {new_plots} total). Bersihkan rintangan untuk pakai lahan baru!"
+    return True, f"✅ Kebun diperluas! +{PLOTS_PER_EXPANSION} lahan (sekarang {new_plots} total).\n\n⚠️ Lahan baru ada rintangannya!\nBuka 🗺️ **Lahan** di menu utama untuk bersihkan.\nButuh alat? Beli di 🛒 **Toko Alat**."
 
 async def expand_animal_pens(user_id: int) -> tuple[bool, str]:
     async with get_db() as db:
