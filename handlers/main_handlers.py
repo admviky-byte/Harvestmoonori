@@ -60,6 +60,56 @@ async def safe_send(update: Update, text: str, keyboard=None):
     except Exception as e:
         logger.error(f"safe_send failed: {e}")
 
+async def get_item_photo(item_key: str) -> str | None:
+    """Get photo file_id for an item from game_settings."""
+    photo_id = await get_setting(f"photo_{item_key}")
+    return photo_id if photo_id else None
+
+async def safe_send_photo(target, text: str, keyboard=None, photo_id: str = None):
+    """Send photo with caption, fallback to text if no photo or error."""
+    if not photo_id:
+        # No photo, send as text
+        if hasattr(target, "edit_message_text"):
+            await safe_edit(target, text, keyboard)
+        elif hasattr(target, "message") and target.message:
+            await safe_send(target, text, keyboard)
+        return
+
+    try:
+        if hasattr(target, "message") and target.message:
+            # From callback query — delete old message, send new photo
+            chat_id = target.message.chat_id
+            try:
+                await target.message.delete()
+            except Exception:
+                pass
+            await target.message.get_bot().send_photo(
+                chat_id=chat_id,
+                photo=photo_id,
+                caption=text,
+                reply_markup=keyboard,
+                parse_mode=ParseMode.MARKDOWN
+            )
+        else:
+            # From update.message
+            await target.message.reply_photo(
+                photo=photo_id,
+                caption=text,
+                reply_markup=keyboard,
+                parse_mode=ParseMode.MARKDOWN
+            )
+    except Exception as e:
+        logger.error(f"safe_send_photo failed: {e}, falling back to text")
+        if hasattr(target, "edit_message_text"):
+            await safe_edit(target, text, keyboard)
+        elif hasattr(target, "message") and target.message:
+            try:
+                await target.message.reply_text(
+                    text, reply_markup=keyboard, parse_mode=ParseMode.MARKDOWN
+                )
+            except Exception:
+                pass
+
 
 # ─── START / MENU ─────────────────────────────────────────────────────────────
 
@@ -139,7 +189,12 @@ async def plant_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if ok:
         plots = await get_plots(user.id)
         db_user = await get_user_full(user.id)
-        await safe_edit(query, msg + "\n\n" + fmt_farm(db_user, plots), farm_keyboard(plots, db_user["level"]))
+        full_text = msg + "\n\n" + fmt_farm(db_user, plots)
+        photo_id = await get_item_photo(crop_key)
+        if photo_id:
+            await safe_send_photo(query, full_text, farm_keyboard(plots, db_user["level"]), photo_id)
+        else:
+            await safe_edit(query, full_text, farm_keyboard(plots, db_user["level"]))
     else:
         await query.answer(msg, show_alert=True)
 
@@ -405,7 +460,12 @@ async def sell_menu_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     price_line = f"💵 Harga jual: Rp{sell_price:,}/satuan" if sell_price else "⚠️ Tidak bisa dijual langsung (pasang di pasar saja)"
     text = f"{emoji} **{name}** (kamu punya: {qty})\n{price_line}"
-    await safe_edit(query, text, sell_keyboard(item_key, qty))
+
+    photo_id = await get_item_photo(item_key)
+    if photo_id:
+        await safe_send_photo(query, text, sell_keyboard(item_key, qty), photo_id)
+    else:
+        await safe_edit(query, text, sell_keyboard(item_key, qty))
 
 async def sell_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
