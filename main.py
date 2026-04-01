@@ -33,6 +33,7 @@ from handlers.main_handlers import (
     profile_callback, profile_cmd,
     leaderboard_callback, leaderboard_cmd,
     setname_callback, setname_cmd, user_text_input,
+    setavatar_callback, setavatar_cmd, user_photo_input,
     tutorial_callback, tutorial_cmd,
     daily_callback, daily_cmd,
     help_callback, help_cmd,
@@ -88,6 +89,7 @@ def register_handlers(app: Application):
     app.add_handler(CommandHandler("listitem", listitem_cmd))
     app.add_handler(CommandHandler("leaderboard", leaderboard_cmd))
     app.add_handler(CommandHandler("setname", setname_cmd))
+    app.add_handler(CommandHandler("setavatar", setavatar_cmd))
     app.add_handler(CommandHandler("shop", shop_cmd))
     app.add_handler(CommandHandler("tutorial", tutorial_cmd))
 
@@ -111,6 +113,12 @@ def register_handlers(app: Application):
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         user_text_input
+    ))
+
+    # ─── USER PHOTO INPUT (for setavatar) ─────────────────────────────────────
+    app.add_handler(MessageHandler(
+        filters.PHOTO,
+        user_photo_input
     ))
 
     # ─── CALLBACK QUERIES ─────────────────────────────────────────────────────
@@ -175,6 +183,7 @@ def register_handlers(app: Application):
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^profile$"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^leaderboard$"))
     app.add_handler(CallbackQueryHandler(setname_callback, pattern="^setname$"))
+    app.add_handler(CallbackQueryHandler(setavatar_callback, pattern="^setavatar$"))
     app.add_handler(CallbackQueryHandler(tutorial_callback, pattern="^tutorial$"))
     app.add_handler(CallbackQueryHandler(daily_callback, pattern="^daily$"))
     app.add_handler(CallbackQueryHandler(help_callback, pattern="^help$"))
