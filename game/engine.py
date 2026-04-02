@@ -452,9 +452,11 @@ def _generate_order(user_level: int) -> dict:
     for crop_k, crop_v in CROPS.items():
         if crop_v["level_req"] <= user_level:
             all_items.append((crop_k, crop_v["sell_price"]))
+    # Only include recipes from buildings the user's level can access
     for bld in BUILDINGS.values():
-        for rec_k, rec_v in bld["recipes"].items():
-            all_items.append((rec_k, rec_v["sell_price"]))
+        if bld["level_req"] <= user_level:
+            for rec_k, rec_v in bld["recipes"].items():
+                all_items.append((rec_k, rec_v["sell_price"]))
 
     if not all_items:
         all_items = [("wheat", 5)]
@@ -474,10 +476,12 @@ def _generate_order(user_level: int) -> dict:
 
 async def ensure_orders(user_id: int, user_level: int):
     """Ensure 9 orders exist. Auto-refresh all orders older than 48h."""
-    from database.db import update_user
     now = utcnow()
 
     async with get_db() as db:
+        # Clean up old completed orders first
+        await db.execute("DELETE FROM orders WHERE user_id = ? AND status = 'completed'", (user_id,))
+
         # Check if 48h auto-refresh needed
         user = await fetchone(db, "SELECT last_orders_refresh FROM users WHERE user_id = ?", (user_id,))
         last_refresh = user["last_orders_refresh"] if user and user["last_orders_refresh"] else None
@@ -493,19 +497,17 @@ async def ensure_orders(user_id: int, user_level: int):
             except Exception:
                 need_full_refresh = True
         else:
-            # First time, set timestamp but don't force refresh
             await db.execute("UPDATE users SET last_orders_refresh = ? WHERE user_id = ?",
                              (now.isoformat(), user_id))
 
         if need_full_refresh:
-            # Delete all active orders and regenerate
-            await db.execute("DELETE FROM orders WHERE user_id = ? AND status = 'active'", (user_id,))
+            await db.execute("DELETE FROM orders WHERE user_id = ?", (user_id,))
             await db.execute("UPDATE users SET last_orders_refresh = ? WHERE user_id = ?",
                              (now.isoformat(), user_id))
             for slot in range(9):
                 order = _generate_order(user_level)
                 await db.execute("""
-                    INSERT INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
+                    INSERT OR REPLACE INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
                     VALUES (?, ?, ?, ?, ?, 'active')
                 """, (user_id, slot, json.dumps(order["items"]), order["reward_coins"], order["reward_xp"]))
             await db.commit()
@@ -520,7 +522,7 @@ async def ensure_orders(user_id: int, user_level: int):
             if slot not in used_slots:
                 order = _generate_order(user_level)
                 await db.execute("""
-                    INSERT INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
+                    INSERT OR REPLACE INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
                     VALUES (?, ?, ?, ?, ?, 'active')
                 """, (user_id, slot, json.dumps(order["items"]), order["reward_coins"], order["reward_xp"]))
         await db.commit()
@@ -545,14 +547,14 @@ async def refresh_orders(user_id: int, user_level: int) -> tuple[bool, str]:
             except Exception:
                 pass
 
-        # Do refresh
-        await db.execute("DELETE FROM orders WHERE user_id = ? AND status = 'active'", (user_id,))
+        # Do refresh — delete ALL orders and regenerate
+        await db.execute("DELETE FROM orders WHERE user_id = ?", (user_id,))
         await db.execute("UPDATE users SET last_orders_refresh = ? WHERE user_id = ?",
                          (now.isoformat(), user_id))
         for slot in range(9):
             order = _generate_order(user_level)
             await db.execute("""
-                INSERT INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
+                INSERT OR REPLACE INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
                 VALUES (?, ?, ?, ?, ?, 'active')
             """, (user_id, slot, json.dumps(order["items"]), order["reward_coins"], order["reward_xp"]))
         await db.commit()
@@ -596,12 +598,14 @@ async def fulfill_order(user_id: int, order_id: int) -> tuple[bool, str]:
         await db.execute("UPDATE orders SET status = 'completed' WHERE id = ?", (order_id,))
         await db.commit()
 
-    # Generate replacement
+    # Generate replacement — delete old completed order first to avoid UNIQUE conflict
     user_row = await get_user_full(user_id)
     new_order = _generate_order(user_row["level"])
     async with get_db() as db:
+        await db.execute("DELETE FROM orders WHERE user_id = ? AND slot = ? AND status = 'completed'",
+                         (user_id, order["slot"]))
         await db.execute("""
-            INSERT INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
+            INSERT OR REPLACE INTO orders (user_id, slot, items, reward_coins, reward_xp, status)
             VALUES (?, ?, ?, ?, ?, 'active')
         """, (user_id, order["slot"], json.dumps(new_order["items"]), new_order["reward_coins"], new_order["reward_xp"]))
         await db.commit()
