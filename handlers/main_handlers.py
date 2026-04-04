@@ -1,7 +1,9 @@
 # handlers/main_handlers.py - Core handlers for Harvest Kingdom
+# ✅ UPDATED: Fitur notif market ke channel Telegram
 
 import json
 import logging
+import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
@@ -68,7 +70,6 @@ async def get_item_photo(item_key: str) -> str | None:
 async def safe_send_photo(target, text: str, keyboard=None, photo_id: str = None):
     """Send photo with caption, fallback to text if no photo or error."""
     if not photo_id:
-        # No photo, send as text
         if hasattr(target, "edit_message_text"):
             await safe_edit(target, text, keyboard)
         elif hasattr(target, "message") and target.message:
@@ -77,7 +78,6 @@ async def safe_send_photo(target, text: str, keyboard=None, photo_id: str = None
 
     try:
         if hasattr(target, "message") and target.message:
-            # From callback query — delete old message, send new photo
             chat_id = target.message.chat_id
             try:
                 await target.message.delete()
@@ -91,7 +91,6 @@ async def safe_send_photo(target, text: str, keyboard=None, photo_id: str = None
                 parse_mode=ParseMode.MARKDOWN
             )
         else:
-            # From update.message
             await target.message.reply_photo(
                 photo=photo_id,
                 caption=text,
@@ -111,14 +110,68 @@ async def safe_send_photo(target, text: str, keyboard=None, photo_id: str = None
                 pass
 
 
+# ─── MARKET CHANNEL NOTIF ─────────────────────────────────────────────────────
+
+async def post_market_to_channel(context, action: str, data: dict):
+    """
+    Kirim notif transaksi market ke channel Telegram.
+
+    action: "list" atau "sold"
+    data keys:
+      - list: seller_name, item, qty, price
+      - sold: buyer_name, seller_name, item, qty, total
+    """
+    channel_id = await get_setting("market_channel_id", "")
+    if not channel_id or channel_id == "0":
+        return
+
+    try:
+        channel_id = int(channel_id)
+    except ValueError:
+        logger.warning(f"[CHANNEL] market_channel_id tidak valid: {channel_id}")
+        return
+
+    from game.data import get_item_emoji, get_item_name
+    emoji = get_item_emoji(data["item"])
+    name = get_item_name(data["item"])
+
+    if action == "list":
+        total = data["price"] * data["qty"]
+        text = (
+            f"🏪 *Item Baru di Pasar\\!*\n\n"
+            f"👤 Penjual: {data['seller_name']}\n"
+            f"📦 Item: {emoji} {name} x{data['qty']}\n"
+            f"💰 Harga: Rp{data['price']:,}/satuan\n"
+            f"🏷️ Total: Rp{total:,}\n\n"
+            f"Buka bot dan ketuk 🏪 *Pasar* untuk beli\\!"
+        )
+    elif action == "sold":
+        text = (
+            f"✅ *Transaksi Berhasil\\!*\n\n"
+            f"🛒 Pembeli: {data['buyer_name']}\n"
+            f"📦 Item: {emoji} {name} x{data['qty']}\n"
+            f"💰 Total: Rp{data['total']:,}\n"
+            f"👤 Dari penjual: {data['seller_name']}"
+        )
+    else:
+        return
+
+    try:
+        await context.bot.send_message(
+            chat_id=channel_id,
+            text=text,
+            parse_mode="MarkdownV2"
+        )
+    except Exception as e:
+        logger.warning(f"[CHANNEL] Gagal kirim notif market ke channel: {e}")
+
+
 # ─── START / MENU ─────────────────────────────────────────────────────────────
 
 async def start_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     maintenance = await get_setting("maintenance_mode", "0")
-    
-    # Check maintenance (skip for admin)
-    import os
+
     admin_ids = [int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
     if maintenance == "1" and user.id not in admin_ids:
         await update.message.reply_text("🔧 Game sedang maintenance. Coba lagi nanti!")
@@ -617,9 +670,32 @@ async def mkt_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     listing_id = int(query.data.split("_")[2])
     user = query.from_user
     await get_or_create_user(user.id, user.username, user.first_name)
+
+    # ✅ Ambil data listing SEBELUM dibeli (karena setelah transaksi listing terhapus dari DB)
+    from database.db import get_db as _get_db, fetchone as _fetchone
+    _listing_data = None
+    try:
+        async with _get_db() as _db:
+            _row = await _fetchone(_db, "SELECT * FROM market_listings WHERE id = ?", (listing_id,))
+            if _row:
+                _listing_data = dict(_row)
+    except Exception as e:
+        logger.warning(f"[CHANNEL] Gagal ambil data listing sebelum beli: {e}")
+
     ok, msg = await buy_from_market(user.id, listing_id)
     await query.answer(msg, show_alert=True)
+
     if ok:
+        # ✅ Kirim notif ke channel setelah transaksi berhasil
+        if _listing_data:
+            await post_market_to_channel(ctx, "sold", {
+                "buyer_name": user.first_name or user.username or "Farmer",
+                "seller_name": _listing_data["seller_name"],
+                "item": _listing_data["item"],
+                "qty": _listing_data["qty"],
+                "total": _listing_data["price"] * _listing_data["qty"],
+            })
+
         listings = await get_market_listings(0, 9)
         from database.db import get_db, fetchone, fetchall
         async with get_db() as db:
@@ -633,7 +709,7 @@ async def my_listings_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = query.from_user
     from database.db import get_db, fetchone, fetchall
     async with get_db() as db:
-        rows = await fetchall(db, 
+        rows = await fetchall(db,
             "SELECT * FROM market_listings WHERE seller_id = ?", (user.id,)
         )
         listings = [dict(r) for r in rows]
@@ -696,6 +772,15 @@ async def listitem_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ok, msg = await list_item_on_market(user.id, seller_name, item_key, qty, price)
     await safe_send(update, msg)
 
+    # ✅ Kirim notif ke channel setelah listing berhasil
+    if ok:
+        await post_market_to_channel(ctx, "list", {
+            "seller_name": seller_name,
+            "item": item_key,
+            "qty": qty,
+            "price": price,
+        })
+
 
 # ─── LAND ─────────────────────────────────────────────────────────────────────
 
@@ -740,7 +825,6 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     user = query.from_user
     db_user = await get_or_create_user(user.id, user.username, user.first_name)
-    # Get rank
     lb = await get_leaderboard(50)
     for i, u in enumerate(lb):
         if u["user_id"] == user.id:
@@ -809,7 +893,7 @@ async def setname_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["pending_action"] = "setname"
 
 
-# ─── SET AVATAR ──────────────────────────────────────────────────────────────
+# ─── SET AVATAR ───────────────────────────────────────────────────────────────
 
 async def setavatar_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -829,13 +913,11 @@ async def setavatar_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def setavatar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    # Check if reply to photo
     if update.message.reply_to_message and update.message.reply_to_message.photo:
         photo = update.message.reply_to_message.photo[-1]
         await set_avatar(user.id, photo.file_id)
         await safe_send(update, "✅ Avatar profil berhasil di-set! Cek di /profile", back_to_menu())
         return
-    # Check if message itself has photo
     if update.message.photo:
         photo = update.message.photo[-1]
         await set_avatar(user.id, photo.file_id)
@@ -934,6 +1016,7 @@ async def help_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await safe_send(update, fmt_help(), back_to_menu())
 
+
 # ─── TOKO ALAT ────────────────────────────────────────────────────────────────
 
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -992,7 +1075,6 @@ async def items_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if category not in ("crops", "animals", "products", "tools", "all"):
         category = "all"
     text = fmt_all_items(category)
-    # Telegram message max 4096 chars
     if len(text) > 4000:
         text = text[:3990] + "\n\n_(dipotong)_"
     from utils.keyboards import items_keyboard
